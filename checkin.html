@@ -22,6 +22,7 @@
   </div>
   <nav class="scroll" aria-label="Weeks"><div class="weeks" id="weeks"></div></nav>
   <section class="sheet" id="sheet" aria-live="polite"></section>
+  <p><button class="btn hidden" type="button" id="forget">Clear saved check-in from this browser</button></p>
   <p class="note hidden" id="practice">Practice mode: answers aren’t being sent to your teacher yet, so feel free to try things out.</p>
 </main>
 
@@ -36,6 +37,7 @@
   const done = JSON.parse(U.get('wd-done') || '{}');   // results this browser already sent
   // Only the current week can be opened. Past weeks are closed, future weeks are locked.
   let week = open;
+  const forget = document.getElementById('forget');
   if (!CONFIG.API_URL) document.getElementById('practice').classList.remove('hidden');
 
   function renderWeeks() {
@@ -55,6 +57,7 @@
   }
 
   function renderSheet() {
+    forget.classList.toggle('hidden', !U.get('wd-name') && Object.keys(done).length === 0);
     const w = WEEKS[week - 1], rec = done[week];
     let h = `<div class="sheet-head"><span class="topic">Week ${week} of ${WEEKS.length}</span><h2>${U.esc(w.t)}</h2>`;
     if (!rec) h += `<div class="progress"><span id="progTxt">0 of 5 answered</span><div class="bar"><i id="progBar" style="width:0"></i></div></div>`;
@@ -115,6 +118,15 @@
   document.addEventListener('click', e => {
     const b = e.target.closest('.wk'); if (!b || b.disabled) return;
     week = +b.dataset.w; renderWeeks(); renderSheet();
+  });
+  forget.addEventListener('click', () => {
+    if (document.getElementById('submit')?.disabled) return;
+    U.set('wd-name', '');
+    U.set('wd-done', '{}');
+    for (const savedWeek of Object.keys(done)) delete done[savedWeek];
+    renderWeeks();
+    renderSheet();
+    document.getElementById('name').focus();
   });
   document.addEventListener('change', e => { if (e.target.matches('#quiz input[type=radio]')) updateProgress(); });
   document.addEventListener('submit', e => { if (e.target.id === 'quiz') submit(e); });
