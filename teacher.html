@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Teacher Roster · Web Development</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232b3ee6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-head"><div class="wrap">
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true">&lt;/&gt;</span><span data-course>Web Development</span></a>
+  <nav aria-label="Main"><a href="index.html">Home</a><a href="teacher.html" aria-current="page">Teacher</a></nav>
+</div></header>
+
+<main class="wrap narrow">
+  <div class="page-head">
+    <h1>Who’s here this week?</h1>
+    <p class="muted">Private to the teacher. Enter your PIN and choose a week to see who checked in. Every check-in is also saved in your Google Sheet.</p>
+  </div>
+
+  <form id="login" class="panel">
+    <div class="controls">
+      <div><label class="f" for="pin">Teacher PIN</label><input type="password" id="pin" autocomplete="current-password" style="width:200px"></div>
+      <div><label class="f" for="week">Week</label><select id="week"></select></div>
+      <button class="btn" type="submit">Show attendance</button>
+    </div>
+    <p class="msg" id="msg" style="margin-top:12px"></p>
+  </form>
+
+  <section id="out" class="panel hidden" aria-live="polite">
+    <h2 id="outTitle"></h2>
+    <div class="kpis">
+      <div class="kpi"><span>Students checked in</span><b id="kCount">0</b></div>
+      <div class="kpi"><span>Average score</span><b id="kAvg">–</b></div>
+      <div class="kpi"><span>Perfect scores (5/5)</span><b id="kTop">0</b></div>
+    </div>
+    <div class="table-head"><strong>Student names</strong><span><button class="btn ghost" type="button" id="copy">Copy names</button> <span class="msg" id="copyMsg"></span></span></div>
+    <table class="stack"><thead><tr><th>#</th><th>Student name</th><th>Checked in</th><th class="num">Score</th></tr></thead><tbody id="rows"></tbody></table>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>&copy; <span data-year></span> <span data-course></span></span><span>Teacher page · not linked from the student pages.</span></div></footer>
+
+<script src="config.js"></script>
+<script src="questions.js"></script>
+<script src="common.js"></script>
+<script>
+{
+  const sel = document.getElementById('week'), msg = document.getElementById('msg');
+  sel.innerHTML = WEEKS.map((w, i) => `<option value="${i + 1}">Week ${i + 1}: ${U.esc(w.t)}</option>`).join('');
+  sel.value = U.openWeek();
+  let names = [];
+
+  document.getElementById('login').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!CONFIG.API_URL) { msg.className = 'msg err'; msg.textContent = 'The site is not connected to a Google Sheet yet. Add API_URL in config.js (see README).'; return; }
+    msg.className = 'msg'; msg.textContent = 'Loading…';
+    try {
+      const url = CONFIG.API_URL + '?pin=' + encodeURIComponent(document.getElementById('pin').value) + '&week=' + sel.value;
+      const j = await (await fetch(url)).json();
+      if (!j.ok) throw new Error(j.error);
+      msg.textContent = '';
+      const rows = j.rows;
+      names = rows.map(r => r.name);
+      const avg = rows.length ? rows.reduce((s, r) => s + (+r.score || 0), 0) / rows.length : null;
+      document.getElementById('outTitle').textContent = `Week ${sel.value}: ${WEEKS[sel.value - 1].t}`;
+      document.getElementById('kCount').textContent = rows.length;
+      document.getElementById('kAvg').textContent = avg === null ? '–' : avg.toFixed(1) + ' / 5';
+      document.getElementById('kTop').textContent = rows.filter(r => +r.score === 5).length;
+      document.getElementById('rows').innerHTML = rows.map((r, i) => {
+        const t = new Date(r.time);
+        return `<tr><td>${i + 1}</td><td><strong>${U.esc(r.name)}</strong></td><td>${U.esc(isNaN(t) ? r.time : t.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}</td><td class="num">${+r.score || 0}/5</td></tr>`;
+      }).join('') || '<tr><td colspan="4" class="muted">No check-ins yet for this week.</td></tr>';
+      document.getElementById('out').classList.remove('hidden');
+    } catch (err) {
+      msg.className = 'msg err';
+      msg.textContent = err.message === 'Wrong PIN' ? 'That PIN is not correct.' : 'Could not load the roster. Try again.';
+    }
+  });
+
+  document.getElementById('copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(`Week ${sel.value} attendance\n` + names.join('\n')); document.getElementById('copyMsg').textContent = 'Copied.'; }
+    catch (e) { document.getElementById('copyMsg').textContent = 'Copy blocked — select the table instead.'; }
+  });
+}
+</script>
+</body>
+</html>

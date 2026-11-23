@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weekly Check-in · Web Development</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232b3ee6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-head"><div class="wrap">
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true">&lt;/&gt;</span><span data-course>Web Development</span></a>
+  <nav aria-label="Main"><a href="index.html">Home</a><a href="checkin.html" aria-current="page">Check in</a></nav>
+</div></header>
+
+<main class="wrap narrow">
+  <div class="page-head">
+    <h1>Hello! Ready to check in?</h1>
+    <p class="muted">This week’s questions are open now — earlier weeks are closed. Pop in your name and give these five questions your best try. Don’t worry about getting everything right — you’ll see the answers afterwards.</p>
+  </div>
+  <nav class="scroll" aria-label="Weeks"><div class="weeks" id="weeks"></div></nav>
+  <section class="sheet" id="sheet" aria-live="polite"></section>
+  <p class="note hidden" id="practice">Practice mode: answers aren’t being sent to your teacher yet, so feel free to try things out.</p>
+</main>
+
+<footer><div class="wrap"><span>&copy; <span data-year></span> <span data-course></span></span><span>Only your teacher sees the names. Have a great class!</span></div></footer>
+
+<script src="config.js"></script>
+<script src="questions.js"></script>
+<script src="common.js"></script>
+<script>
+{
+  const open = U.openWeek();
+  const done = JSON.parse(U.get('wd-done') || '{}');   // results this browser already sent
+  // Only the current week can be opened. Past weeks are closed, future weeks are locked.
+  let week = open;
+  if (!CONFIG.API_URL) document.getElementById('practice').classList.remove('hidden');
+
+  function renderWeeks() {
+    document.getElementById('weeks').innerHTML = WEEKS.map((w, i) => {
+      const n = i + 1;
+      return `<button type="button" class="wk${done[n] ? ' done' : ''}" data-w="${n}" aria-current="${n === week}" ${n < open ? 'disabled title="This week is closed"' : n > open ? 'disabled title="Opens later"' : ''} aria-label="Week ${n}: ${U.esc(w.t)}">Week ${n}</button>`;
+    }).join('');
+    const cur = document.querySelector('.wk[aria-current=true]');
+    if (cur) cur.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }
+
+  function updateProgress() {
+    const n = document.querySelectorAll('#quiz input[type=radio]:checked').length;
+    const t = document.getElementById('progTxt'), b = document.getElementById('progBar');
+    if (t) t.textContent = n === 5 ? 'All done — ready to submit!' : n + ' of 5 answered';
+    if (b) b.style.width = (n / 5 * 100) + '%';
+  }
+
+  function renderSheet() {
+    const w = WEEKS[week - 1], rec = done[week];
+    let h = `<div class="sheet-head"><span class="topic">Week ${week} of ${WEEKS.length}</span><h2>${U.esc(w.t)}</h2>`;
+    if (!rec) h += `<div class="progress"><span id="progTxt">0 of 5 answered</span><div class="bar"><i id="progBar" style="width:0"></i></div></div>`;
+    h += `</div><div class="sheet-body">`;
+    if (rec) {
+      const first = rec.name.split(' ')[0];
+      const cheer = rec.score === 5 ? `Perfect score, ${first}! Amazing work.`
+        : rec.score >= 3 ? `Nice work, ${first}! You’re getting it.`
+        : `Thanks for trying, ${first}! Every week gets easier.`;
+      h += `<div class="result"><span class="score">${rec.score}/5</span><p><span class="big">${U.esc(cheer)}</span><span class="cheer">You’re checked in for week ${week}. Have a look at the green answers below.</span></p></div>`;
+    }
+    h += `<form id="quiz" novalidate><label class="f" for="name">What’s your full name?</label>
+      <input type="text" id="name" autocomplete="name" maxlength="80" placeholder="e.g. Ana Lopez" value="${U.esc(rec ? rec.name : (U.get('wd-name') || ''))}" ${rec ? 'disabled' : ''} required>`;
+    w.q.forEach((q, qi) => {
+      h += `<fieldset class="q"><legend><span class="n">${qi + 1}</span>${U.fmt(q[0])}</legend><div>`;
+      q[1].forEach((o, oi) => {
+        let cls = '';
+        if (rec) { if (oi === q[2]) cls = 'right'; else if (rec.answers[qi] === oi) cls = 'wrong'; }
+        h += `<label class="opt ${cls}"><input type="radio" name="q${qi}" value="${oi}" ${rec && rec.answers[qi] === oi ? 'checked' : ''} ${rec ? 'disabled' : ''}><span class="k">${'ABCD'[oi]}</span><span>${U.fmt(o)}</span></label>`;
+      });
+      h += `</div></fieldset>`;
+    });
+    if (!rec) h += `<div class="submit-row"><button class="btn" type="submit" id="submit">I’m done — submit!</button><span class="msg" id="msg"></span></div>`;
+    document.getElementById('sheet').innerHTML = h + '</form></div>';
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    const msg = document.getElementById('msg'), btn = document.getElementById('submit');
+    const name = document.getElementById('name').value.trim().replace(/\s+/g, ' ');
+    if (name.length < 2) { msg.className = 'msg err'; msg.textContent = 'Oops — please type your full name first.'; document.getElementById('name').focus(); return; }
+    const answers = [];
+    for (let i = 0; i < 5; i++) {
+      const c = document.querySelector(`input[name=q${i}]:checked`);
+      if (!c) { msg.className = 'msg err'; msg.textContent = `Almost there! Question ${i + 1} still needs an answer.`; return; }
+      answers.push(+c.value);
+    }
+    const score = answers.filter((a, i) => a === WEEKS[week - 1].q[i][2]).length;
+    U.set('wd-name', name);
+    if (CONFIG.API_URL) {
+      btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Sending your answers…';
+      try {
+        // text/plain avoids a CORS preflight, which Google Apps Script doesn't answer
+        const r = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ week, topic: WEEKS[week - 1].t, name, score, answers: answers.map(a => 'ABCD'[a]).join('') }) });
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || 'failed');
+      } catch (err) {
+        btn.disabled = false; msg.className = 'msg err'; msg.textContent = 'Hmm, that didn’t send. Check your internet and try again.'; return;
+      }
+    }
+    done[week] = { name, score, answers };
+    U.set('wd-done', JSON.stringify(done));
+    renderWeeks(); renderSheet();
+    document.getElementById('sheet').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.wk'); if (!b || b.disabled) return;
+    week = +b.dataset.w; renderWeeks(); renderSheet();
+  });
+  document.addEventListener('change', e => { if (e.target.matches('#quiz input[type=radio]')) updateProgress(); });
+  document.addEventListener('submit', e => { if (e.target.id === 'quiz') submit(e); });
+  renderWeeks(); renderSheet();
+}
+</script>
+</body>
+</html>

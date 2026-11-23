@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A 16-week course in web development: HTML, CSS and JavaScript, with a weekly check-in.">
+<title>Web Development</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232b3ee6'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='13' font-weight='700' fill='white' text-anchor='middle'%3E%3C/%3E%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-head"><div class="wrap">
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true">&lt;/&gt;</span><span data-course>Web Development</span></a>
+  <nav aria-label="Main"><a href="index.html" aria-current="page">Home</a><a href="checkin.html">Check in</a></nav>
+</div></header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="hello" id="hello">Hi there, welcome!</p>
+      <span class="eyebrow">16 weeks · HTML, CSS and JavaScript</span>
+      <h1>Let’s build the web together</h1>
+      <p class="lead">Every week we learn something new about making websites. At each class, say hi by checking in with your name and trying five quick questions. No pressure — it’s how we learn!</p>
+      <div class="row" style="display:flex;flex-wrap:wrap;gap:12px">
+        <a class="btn" id="go" href="checkin.html">Check in</a>
+        <a class="btn ghost" href="#syllabus">See what we’ll learn</a>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 440 320" role="img" aria-label="A friendly drawing of a browser window with code and colourful blocks">
+        <circle cx="380" cy="50" r="34" fill="#ffc94d"/>
+        <circle cx="40" cy="270" r="22" fill="#39c79a" opacity=".8"/>
+        <rect x="58" y="40" width="320" height="230" rx="22" fill="#ffffff" stroke="#1f2340" stroke-width="4"/>
+        <path d="M58 62a22 22 0 0 1 22-22h276a22 22 0 0 1 22 22v18H58z" fill="#4c5bf5" stroke="#1f2340" stroke-width="4"/>
+        <circle cx="84" cy="60" r="6" fill="#ff7a59"/><circle cx="104" cy="60" r="6" fill="#ffc94d"/><circle cx="124" cy="60" r="6" fill="#39c79a"/>
+        <text x="84" y="118" font-family="ui-monospace,Menlo,monospace" font-size="20" font-weight="700" fill="#ff7a59">&lt;h1&gt;</text>
+        <rect x="140" y="102" width="110" height="18" rx="9" fill="#1f2340" opacity=".85"/>
+        <text x="262" y="118" font-family="ui-monospace,Menlo,monospace" font-size="20" font-weight="700" fill="#ff7a59">&lt;/h1&gt;</text>
+        <rect x="84" y="140" width="210" height="12" rx="6" fill="#c9cdf5"/>
+        <rect x="84" y="162" width="160" height="12" rx="6" fill="#c9cdf5"/>
+        <rect x="84" y="196" width="80" height="48" rx="12" fill="#eceeff"/>
+        <rect x="176" y="196" width="80" height="48" rx="12" fill="#fff0d1"/>
+        <rect x="268" y="196" width="84" height="48" rx="12" fill="#e5f7ef"/>
+        <path d="M300 132l18 10-18 10" fill="none" stroke="#4c5bf5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <g transform="translate(330 220) rotate(-12)"><rect x="0" y="0" width="86" height="40" rx="20" fill="#ff7a59" stroke="#1f2340" stroke-width="4"/><text x="43" y="27" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="17" fill="#fff">5 Qs!</text></g>
+      </svg>
+      <aside class="now" aria-label="This week">
+        <span class="lbl" id="nowLbl">This week</span>
+        <h3 id="nowTopic"></h3>
+        <div class="bar" aria-hidden="true"><i id="nowBar"></i></div>
+        <div class="meta"><span id="nowWeek"></span><span id="nowPct"></span></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="stats">
+    <div><b>16</b><span>weeks of lessons</span></div>
+    <div><b>80</b><span>practice questions</span></div>
+    <div><b>5 min</b><span>is all it takes each week</span></div>
+  </div>
+
+  <section class="block" aria-labelledby="how">
+    <div class="section-head"><h2 id="how">How checking in works</h2></div>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><h3>Tap “Check in”</h3><p>A fresh set of questions opens every week, right on time for class.</p></div>
+      <div class="step"><div class="num">2</div><h3>Give it a go</h3><p>Type your name and pick an answer for each of the five questions. Guessing is okay!</p></div>
+      <div class="step"><div class="num">3</div><h3>See how you did</h3><p>You’re marked present, and you see the right answers so you learn as you go.</p></div>
+    </div>
+  </section>
+
+  <section class="block" id="syllabus" aria-labelledby="syl">
+    <div class="section-head"><h2 id="syl">What we’ll learn</h2><span class="muted" id="openInfo"></span></div>
+    <div id="units"></div>
+  </section>
+</div>
+
+<footer><div class="wrap"><span>&copy; <span data-year></span> <span data-course></span></span><span>Stuck on something? Ask in class — questions are always welcome.</span></div></footer>
+
+<script src="config.js"></script>
+<script src="questions.js"></script>
+<script src="common.js"></script>
+<script>
+{
+  const open = U.openWeek(), cur = WEEKS[open - 1];
+  const go = document.getElementById('go');
+  go.textContent = 'Check in for week ' + open;
+  const nm = (U.get('wd-name') || '').split(' ')[0];
+  if (nm) document.getElementById('hello').textContent = 'Welcome back, ' + nm + '!';
+  go.href = 'checkin.html#week-' + open;
+  document.getElementById('nowLbl').textContent = 'This week · Week ' + open;
+  document.getElementById('nowTopic').textContent = cur.t;
+  document.getElementById('nowBar').style.width = Math.round(open / WEEKS.length * 100) + '%';
+  document.getElementById('nowWeek').textContent = 'Week ' + open + ' of ' + WEEKS.length;
+  document.getElementById('nowPct').textContent = Math.round(open / WEEKS.length * 100) + '% of the way there';
+  document.getElementById('openInfo').textContent = 'Only this week is open';
+
+  document.getElementById('units').innerHTML = U.UNITS.map(u => {
+    const rows = WEEKS.slice(u.from - 1, u.to).map((w, i) => {
+      const n = u.from + i;
+      if (n < open) return `<div class="wrow locked"><span class="wn">Week ${n}</span><span>${U.esc(w.t)}</span><span class="tag done">Closed</span></div>`;
+      if (n > open) return `<div class="wrow locked"><span class="wn">Week ${n}</span><span>${U.esc(w.t)}</span><span class="tag locked">Opens later</span></div>`;
+      return `<a class="wrow" href="checkin.html#week-${n}"><span class="wn">Week ${n}</span><span>${U.esc(w.t)}</span><span class="tag current">Open this week</span></a>`;
+    }).join('');
+    return `<div class="unit"><h3>${U.esc(u.name)} <small>Weeks ${u.from}–${u.to}</small></h3><div class="weeks-list">${rows}</div></div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
